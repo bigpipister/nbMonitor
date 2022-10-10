@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link rel="stylesheet" href="./css/elementui/index.min.css" />
+    <style>
+      html {height: 95%;}
+
+      body {height: 95%;}
+
+      .imgcontainer {
+        text-align: center;
+        margin: 5px 0 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <el-container>
+        <el-aside width="150px" :style="asideHight">
+          <el-menu style="background-color: rgb(238, 241, 246)">
+            <el-menu-item index="1">
+              <i class="el-icon-menu"></i>
+              <a href="/">
+                <span slot="title">筆電借閱系統</span>
+              </a>
+            </el-menu-item>
+            <el-menu-item index="2">
+              <i class="el-icon-setting"></i>
+              <a href="manage">
+                <span slot="title">設備管理系統</span>
+              </a>
+            </el-menu-item>
+          </el-menu>
+        </el-aside>
+        <el-container :style="containerHight">
+          <el-container>
+            <el-header>
+              <div style="float: left; font-size: 20px">筆電借閱系統</div>
+            </el-header>
+
+            <el-main>
+              <div class="imgcontainer">
+                <img src="./img/images.jpg" alt="Avatar" class="avatar" />
+              </div>
+              <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
+                <el-row type="flex">
+                  <el-col :span="8">
+                    <el-form-item label="廠" prop="fab">
+                      <el-input ref="fab" style="width:16em" size="small" v-model="form.fab"></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="部門" prop="dep">
+                      <el-input ref="dep" style="width:16em" size="small" v-model="form.dep"></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="工號" prop="employeeId">
+                      <el-input ref="employeeId" style="width:16em" size="small" v-model="form.employeeId"></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-row type="flex">
+                  <el-col :span="8">
+                    <el-form-item label="姓名" prop="name">
+                      <el-input ref="name" style="width:16em" size="small" v-model="form.name"></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="筆電編號" prop="nbNumber">
+                      <el-input ref="nbNumber" style="width:16em" size="small" v-model="form.nbNumber"></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-form-item label="筆電配件">
+                  <el-checkbox-group size="small" v-model="form.parts">
+                    <el-checkbox label="滑鼠"name="part"></el-checkbox>
+                    <el-checkbox label="充電線"name="part"></el-checkbox>
+                    <el-checkbox label="筆電包" name="part"></el-checkbox>
+                    <el-checkbox label="網路線" name="part"></el-checkbox>
+                  </el-checkbox-group>
+                </el-form-item>
+                <el-form-item label="借用/歸還/續借" prop="action">
+                  <el-radio-group ref="action" size="small" v-model="form.action" @change="clearProblems()">
+                    <el-radio label="借用"></el-radio>
+                    <el-radio label="歸還"></el-radio>
+                    <el-radio label="續借"></el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="現在時間">
+                  <el-date-picker
+                    v-model="form.currentTime"
+                    type="datetime"
+                    format="yyyy-MM-DD HH:mm:ss"
+                    :disabled="timePickerEnabled">
+                  </el-date-picker>
+                </el-form-item>
+                <el-form-item label="問題反饋">
+                  <el-checkbox-group size="small" v-model="form.problems" :disabled="form.action != '歸還'">
+                    <el-checkbox label="藍屏" value="藍屏" name="problem"></el-checkbox>
+                    <el-checkbox label="黑屏" value="黑屏" name="problem"></el-checkbox>
+                    <el-checkbox label="重開" value="重開" name="problem"></el-checkbox>
+                    <el-checkbox label="WIFI連不上" value="WIFI連不上" name="problem"></el-checkbox>
+                    <el-checkbox label="其它原因" value="其它原因" name="problem"></el-checkbox>
+                    <!--el-checkbox label="無" value="無" name="problem"></el-checkbox-->
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" size="small" @click="formSubmit()">送出</el-button>
+                </el-form-item>
+              </el-form>
+            </el-main>
+          </el-container>
+        </el-container>
+      </el-container>
+    </div>
+  </body>
+  <!-- import Vue before Element -->
+  <script src="./js/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="./js/elementui/index.min.js"></script>
+  <script src="./js/jquery.min.js"></script>
+  <script>
+    var validField = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('欄位不得為空!'))
+      } else {
+        callback()
+      }
+    }
+    var vum = new Vue({
+      el: "#app",
+      data() {
+        return {
+          containerHight: '',
+          asideHight: '',
+          form: {
+            fab: '',
+            dep: '',
+            employeeId: '',
+            name: '',
+            nbNumber: '',
+            parts: [],
+            action: '',
+            currentTime: '',
+            problems: []
+          },
+          formRules: {
+            fab: [{ required: true, trigger: 'blur', validator: validField }],
+            dep: [{ required: true, trigger: 'blur', validator: validField }],
+            employeeId: [{ required: true, trigger: 'blur', validator: validField }],
+            name: [{ required: true, trigger: 'blur', validator: validField }],
+            nbNumber: [{ required: true, trigger: 'blur', validator: validField }],
+            action: [{ required: true, trigger: 'blur', validator: validField }]
+          },
+          timePickerEnabled: true,
+          timer: ''
+        }
+      },
+      filters: {
+        versionFormat: function(value) {
+          if (value) {
+            return value.split(':')[1];
+          }
+        }
+      },
+      created () {
+        this.containerHight = 'height: '+(window.screen.height-180)+'px; border:1px solid #eee'
+        this.asideHight = 'height: '+(window.screen.height-180)+'px; background-color: rgb(238, 241, 246)'
+      },
+      mounted () {
+        if (!localStorage.getItem("username")) {
+          this.timer = setInterval(this.updateClock, 1000)
+          this.timePickerEnabled = true
+        } else {
+          this.updateClock()
+          this.timePickerEnabled = false
+        }
+      },
+      methods: {
+        updateClock() {
+          var today = new Date()
+          var dd = String(today.getDate()).padStart(2, '0')
+          var mm = String(today.getMonth() + 1).padStart(2, '0')
+          var yyyy = today.getFullYear()
+          var hours = String(today.getHours()).padStart(2, '0')
+          var mins = String(today.getMinutes()).padStart(2, '0')
+          var secs = String(today.getSeconds()).padStart(2, '0')
+          this.form.currentTime = yyyy + '/' + mm + '/' + dd + ' ' + hours + ':' + mins + ':' + secs
+        },
+        clearProblems () {
+          this.form.problems = []
+        },
+        clearForm () {
+          this.form = {
+            fab: '',
+            dep: '',
+            employeeId: '',
+            name: '',
+            nbNumber: '',
+            parts: [],
+            action: '',
+            currentTime: '',
+            problems: []
+          }
+        },
+        formSubmit () {
+          console.log(this.form)
+          this.$refs.form.validate(valid => {
+              if (valid) {
+                if (this.form.problems.length === 0) {
+                  this.form.problems.push('無')
+                }
+                const confirmText = [
+                '廠: ' + this.form.fab,
+                '部門: ' + this.form.dep,
+                '工號: ' + this.form.employeeId,
+                '姓名: ' + this.form.name,
+                '筆電編號: ' + this.form.nbNumber,
+                '筆電配件: ' + this.form.parts.join('、'),
+                '問題反饋: ' + this.form.problems.join('、')
+                ];
+                const newDatas = [];
+                const h = this.$createElement;
+                for (const i in confirmText) {
+                    newDatas.push(h('p', null, confirmText[i]));
+                }
+                e = this
+                this.$confirm('提示',{
+                    title: '確定後將送出借用申請',
+                    message: h('div', null, newDatas),
+                    showCancelButton: true,
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    type: 'info'
+                }).then(() => {
+                  $.ajax({
+                    url: "http://localhost/rentRecord",
+                    data: JSON.stringify(this.form),
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json;charset=utf-8",
+                    success: function (r) {
+                      ELEMENT.Message.success("資料登錄成功!")
+                      e.clearForm()
+                    },
+                    error: function (r) {
+                      ELEMENT.Message.error("資料登錄失敗，請連絡系統管理員!");
+                    },
+                  }).done((data) => {
+                    console.log(data)
+                  })
+                }).catch(() => {
+                  this.$message({
+                    type: 'info',
+                    message: '已取消登錄'
+                  })
+                })
+              }
+            }
+          )
+        }
+      }
+    });
+  </script>
+  <style scope>
+    .el-header {
+      background-color: #b3c0d1;
+      color: #333;
+      line-height: 60px;
+    }
+  </style>
+</html>

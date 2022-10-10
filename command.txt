@@ -1,0 +1,1 @@
+pyinstaller -F --add-data "public;public" app.py

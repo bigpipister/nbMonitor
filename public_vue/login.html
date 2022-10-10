@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      charset="UTF-8"
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <!-- import CSS -->
+    <link rel="stylesheet" href="./css/elementui/index.min.css" />
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .imgcontainer {
+        text-align: center;
+        margin: 24px 0 12px 0;
+      }
+
+      img.avatar {
+        width: 40%;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h2>設備管理系統</h2>
+      <el-card class="box-card">
+        <el-form
+          :model="loginForm"
+          :rules="rules"
+          ref="loginForm"
+          label-width="80px"
+        >
+          <div class="imgcontainer">
+            <img src="./img/img_avatar.png" alt="Avatar" class="avatar" />
+          </div>
+          <el-form-item label="帳號" prop="username">
+            <el-input v-model="loginForm.username"></el-input>
+          </el-form-item>
+          <el-form-item label="密碼" prop="password">
+            <el-input type="password" v-model="loginForm.password"></el-input>
+          </el-form-item>
+          <el-alert v-if="error" title="帳號或密碼輸入錯誤" type="error">
+          </el-alert>
+          <el-form-item>
+            <el-button type="primary" @click="submitForm('loginForm')"
+              >登入</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </div>
+  </body>
+  <!-- import Vue before Element -->
+  <script src="./js/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="./js/elementui/index.min.js"></script>
+  <script src="./js/jquery.min.js"></script>
+  <script>
+    var vum = new Vue({
+      el: "#app",
+      data() {
+        var validateUsername = (rule, value, callback) => {
+          if (value === "") {
+            callback(new Error("請輸入帳號"));
+          } else {
+            callback();
+          }
+        };
+        var validatePassword = (rule, value, callback) => {
+          if (value === "") {
+            callback(new Error("請輸入密碼"));
+          } else {
+            callback();
+          }
+        };
+        return {
+          loginForm: {
+            username: "",
+            password: "",
+          },
+          rules: {
+            username: [{ validator: validateUsername, trigger: "blur" }],
+            password: [{ validator: validatePassword, trigger: "blur" }],
+          },
+          error: false,
+        };
+      },
+       mounted() {
+        if (localStorage.getItem("username")) {
+          window.location.href = "/"
+        }
+      },
+      methods: {
+        submitForm(formName) {
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              $.post(
+                "http://localhost/auth",
+                { username: vum.loginForm.username, password: vum.loginForm.password },
+                function (data) {
+                  console.log(data)
+                  if (data.status === "failure") {
+                    vum.error = true;
+                  } else {
+                    localStorage.setItem("username", 'admin')
+                    window.location.href = "/"
+                  }
+                }
+              );
+            } else {
+              return false;
+            }
+          });
+        },
+      },
+    });
+  </script>
+</html>

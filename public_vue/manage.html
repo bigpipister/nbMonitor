@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- import CSS -->
+    <link rel="stylesheet" href="./css/elementui/index.min.css" />
+    <style>
+      html {height: 95%;}
+      body {height: 95%;}
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <el-container>
+        <el-aside width="150px" :style="asideHight">
+          <el-menu style="background-color: rgb(238, 241, 246)">
+            <el-menu-item index="1">
+              <i class="el-icon-menu"></i>
+              <a href="/">
+                <span slot="title">筆電借閱系統</span>
+              </a>
+            </el-menu-item>
+            <el-menu-item index="2">
+              <i class="el-icon-setting"></i>
+              <a href="manage">
+                <span slot="title">設備管理系統</span>
+              </a>
+            </el-menu-item>
+          </el-menu>
+        </el-aside>
+        <el-container :style="containerHight">
+          <el-container>
+            <el-header>
+              <div style="float: left; font-size: 20px">設備管理系統</div>
+              <div style="float: right; font-size: 15px">
+                <el-button type="primary" size="small" @click="logout">登出</el-button>
+              </div>
+            </el-header>
+
+            <el-main>
+              <el-tabs type="border-card">
+                <el-tab-pane label="全部筆電資料">
+                  <div style="float: right; font-size: 15px">
+                    <el-form :inline="true" :model="searchForm">
+                      <!-- el-form-item label="查詢軟體名稱">
+                        <el-input
+                          v-model="searchForm.product"
+                          placeholder="軟體名稱"
+                        ></el-input>
+                      </el-form-item>
+                      <el-form-item>
+                        <el-button type="primary" @click="search">查询</el-button>
+                      </el-form-item -->
+                      <el-form-item>
+                        <el-button type="primary" size="small" @click="exportForm()">匯出</el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+                  <el-table :data="tableData" empty-text="暫無數據" style="width: 100%">
+                    <el-table-column label="廠" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.fab }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="部門" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.dep }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="工號" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.employeeId }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="姓名" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="筆電編號" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.nbNumber }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="最後登入帳號" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.user }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="廠牌型號" width="250">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.os }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="最近開機時間" width="180">
+                      <template slot-scope="scope">
+                        <span :class="{ 'active': scope.row.alert }" style="margin-left: 10px">{{ scope.row.logonTime }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="借用日期" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.borrowTime }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="狀態" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.action | actionFormat }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="應用程式名稱" width="200">
+                      <template slot-scope="scope">
+                        <el-select style="margin-left: 10px" v-model="scope.row.production" no-data-text="暫無數據" placeholder="請選擇應用程式名稱">
+                          <el-option v-for="production, index in scope.row.productList" :label="production.split(':')[0]" :value="production"></el-option>
+                        </el-select>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="應用程式版本" width="200">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.production | versionFormat }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="150">
+                      <template slot-scope="scope">
+                        <el-button
+                          size="mini"
+                          @click="handleDownload(scope.$index, scope.row)"
+                          >下載</el-button
+                        >
+                        <el-button
+                          size="mini"
+                          type="danger"
+                          @click="handleDelete(scope.$index, scope.row)"
+                          >删除</el-button
+                        >
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                <el-tab-pane label="筆電維修資料">
+                  <el-dialog title="新增維修記錄" :visible.sync="dialogFormVisible">
+                    <el-form ref="form" :model="form" :rules="formRules" label-width="120px">
+                      <el-form-item label="廠" prop="fab">
+                        <el-input ref="fab" style="width:16em" size="small" v-model="form.fab"></el-input>
+                      </el-form-item>
+                      <el-form-item label="筆電編號" prop="nbNumber">
+                        <el-input ref="nbNumber" style="width:16em" size="small" v-model="form.nbNumber"></el-input>
+                      </el-form-item>
+                      <el-form-item label="狀態" prop="status">
+                        <el-select size="small" v-model="form.status" placeholder="請選擇">
+                          <el-option
+                            v-for="item in statusOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="是否過保" prop="overDate">
+                        <el-radio-group ref="overDate" size="small" v-model="form.overDate">
+                          <el-radio label="是"></el-radio>
+                          <el-radio label="否"></el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                      <el-form-item v-if="form.status == 'repairing'" label="廠商送修日期" prop="repaireDate">
+                        <el-date-picker
+                          size="small"
+                          v-model="form.repairDate"
+                          type="date"
+                          placeholder="選擇日期">
+                        </el-date-picker>
+                      </el-form-item>
+                      <el-form-item v-if="form.status == 'fixed'" label="廠商回廠日期" prop="returnDate">
+                        <el-date-picker
+                          size="small"
+                          v-model="form.returnDate"
+                          type="date"
+                          placeholder="選擇日期">
+                        </el-date-picker>
+                      </el-form-item>
+                      <el-form-item v-if="form.status == 'sunset'" label="損壞日期" prop="brokenDate">
+                        <el-date-picker
+                          size="small"
+                          v-model="form.brokenDate"
+                          type="date"
+                          placeholder="選擇日期">
+                        </el-date-picker>
+                      </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                      <el-button @click="dialogFormVisible = false">取消</el-button>
+                      <el-button type="primary" @click="addRepair()">確定</el-button>
+                    </div>
+                  </el-dialog>
+                  <div style="float: right; font-size: 15px">
+                    <el-form :inline="true">
+                      <el-form-item>
+                        <el-button type="primary" size="small" @click="showRepairDialog()">新增</el-button>
+                      </el-form-item>
+                    </el-form>
+                  </div>
+                  <el-table :data="repairData" empty-text="暫無數據" style="width: 100%">
+                    <el-table-column label="廠" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.fab }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="筆電編號" width="150">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.nbNumber }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="廠商送修日期" width="180">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.repairDate }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="廠商回廠日期" width="180">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.returnDate }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="損壞日期" width="180">
+                      <template slot-scope="scope">
+                        <span style="margin-left: 10px">{{ scope.row.brokenDate }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="150">
+                      <template slot-scope="scope">
+                        <el-button
+                          size="mini"
+                          type="danger"
+                          @click="deleteRepair(scope.$index, scope.row)"
+                          >删除</el-button
+                        >
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-tab-pane>
+                <el-tab-pane label="資料匯整圖表">
+                  <div class="block">
+                    <span class="demonstration">資料時間區間</span>
+                    <el-date-picker
+                      size="small"
+                      v-model="range"
+                      type="daterange"
+                      format="yyyy-MM-dd"
+                      value-format="yyyy-MM-dd"
+                      align="right"
+                      unlink-panels
+                      range-separator="至"
+                      start-placeholder="開始日期"
+                      end-placeholder="結束日期"
+                      :picker-options="pickerOptions">
+                    </el-date-picker>
+                    <br>
+                    <el-card>
+                      <div slot="header">
+                        <span>借用/歸還/續借 總量使用狀況</span>
+                      </div>
+                      <el-row>
+                        <el-col :span="16"><v-chart style="width:  600px" :options="chart1Option" :update-options="{notMerge:true}" /></el-col>
+                        <el-col :span="8"><v-chart style="width:  350px" :options="chart2Option" :update-options="{notMerge:true}" /></el-col>
+                      </el-row>
+                    </el-card>
+                    <el-card>
+                      <div slot="header">
+                        <span>問題反饋</span>
+                      </div>
+                      <el-row>
+                        <el-col :span="16"><v-chart style="width:  600px" :options="chart3Option" :update-options="{notMerge:true}" /></el-col>
+                        <el-col :span="8"><v-chart style="width:  350px" :options="chart4Option" :update-options="{notMerge:true}" /></el-col>
+                      </el-row>
+                    </el-card>
+                    <el-row>
+                      <el-col :span="12">
+                        <el-card>
+                          <div slot="header">
+                            <span>各廠目前庫前狀況</span>
+                          </div>
+                          <el-row>
+                            <v-chart style="width:  500px" :options="chart5Option" :update-options="{notMerge:true}" />
+                          </el-row>
+                        </el-card>
+                      </el-col>
+                      <el-col :span="12">
+                        <el-card>
+                          <div slot="header">
+                            <span>各廠目前維修狀況</span>
+                          </div>
+                          <el-row>
+                            <v-chart style="width:  500px" :options="chart6Option" :update-options="{notMerge:true}" />
+                          </el-row>
+                        </el-card>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </el-tab-pane>
+              </el-tabs>
+            </el-main>
+          </el-container>
+        </el-container>
+      </el-container>
+    </div>
+  </body>
+  <!-- import Vue before Element -->
+  <script src="./js/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="./js/elementui/index.min.js"></script>
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/echart/echarts.js"></script>
+  <script src="./js/echart/vue-echarts.js"></script>
+  <script>
+    var validField = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('欄位不得為空!'))
+      } else {
+        callback()
+      }
+    }
+    var vum = new Vue({
+      el: "#app",
+      components: {
+        "v-chart": VueECharts
+      },
+      data() {
+        return {
+          containerHight: '',
+          asideHight: '',
+          tableData: [],
+          searchForm: {
+            product: "",
+          },
+          repairData: [],
+          dialogFormVisible: false,
+          statusOptions: [{
+            value: 'repairing',
+            label: '廠商維修中'
+          }, {
+            value: 'sunset',
+            label: '已報廢除帳'
+          }, {
+            value: 'ready',
+            label: '待送給原廠維修'
+          }, {
+            value: 'fixed',
+            label: '廠商已修復並歸還'
+          }],
+          form: {
+            fab: '',
+            nbNumber: '',
+            status: '',
+            overDate: '',
+            repairDate: new Date(),
+            returnDate: new Date(),
+            brokenDate: new Date()
+          },
+          formRules: {
+            fab: [{ required: true, trigger: 'blur', validator: validField }],
+            nbNumber: [{ required: true, trigger: 'blur', validator: validField }],
+            status: [{ required: true, trigger: 'blur', validator: validField }],
+            overDate: [{ required: true, trigger: 'blur', validator: validField }]
+          },
+          range: [],
+          pickerOptions: {
+            shortcuts: [{
+              text: '最近一周',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近一個月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                picker.$emit('pick', [start, end]);
+              }
+            }, {
+              text: '最近三個月',
+              onClick(picker) {
+                const end = new Date();
+                const start = new Date();
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                picker.$emit('pick', [start, end]);
+              }
+            }]
+          },
+          chart1Option: {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            legend: {
+              data: []
+            },
+            xAxis: [
+              {
+                type: 'category',
+                axisTick: { show: false },
+                data: []
+              }
+            ],
+            yAxis: [
+              {
+                type: 'value'
+              }
+            ],
+            series: []
+          },
+          chart2Option: {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          },
+          chart3Option: {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            legend: {
+              data: []
+            },
+            xAxis: [
+              {
+                type: 'category',
+                axisTick: { show: false },
+                data: []
+              }
+            ],
+            yAxis: [
+              {
+                type: 'value'
+              }
+            ],
+            series: []
+          },
+          chart4Option: {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          },
+          chart5Option: {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          },
+          chart6Option: {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      filters: {
+        versionFormat: function(value) {
+          if (value) {
+            return value.split(':')[1];
+          }
+        },
+        actionFormat: function(value) {
+          if (value) {
+            if (value === '歸還') {
+              return '庫存'
+            } else if (value === '借用' || value ==='續借') {
+              return '借用中'
+            } else {
+              return value
+            }
+          }
+        }
+      },
+      created () {
+        if (!localStorage.getItem("username")) {
+          window.location.href = "/login";
+        }
+
+        this.containerHight = 'height: '+(window.screen.height-180)+'px; border:1px solid #eee'
+        this.asideHight = 'height: '+(window.screen.height-180)+'px; background-color: rgb(238, 241, 246)'
+        this.getInfo()
+        this.getRepairInfo()
+        let currentDate = new Date()
+        let startDate = currentDate.setDate(currentDate.getDate() - 7)
+        let endDate = new Date()
+        this.range = [this.formatDate(startDate), this.formatDate(endDate)]
+      },
+      mounted() {
+        this.showChart()
+      },
+      watch: {
+        range(newQuestion, oldQuestion) {
+          //console.log(oldQuestion)
+          //console.log(newQuestion)
+          this.showChart()
+        }
+      },
+      methods: {
+        formatDate (date) {
+          var d = new Date(date),
+              month = '' + (d.getMonth() + 1),
+              day = '' + d.getDate(),
+              year = d.getFullYear();
+
+          if (month.length < 2) 
+              month = '0' + month;
+          if (day.length < 2) 
+              day = '0' + day;
+
+          return [year, month, day].join('-');
+        },
+        getInfo () {
+          $.get("http://localhost/info", function (data) {
+            console.log(data)
+            vum.tableData = []
+            data.forEach((element) => {
+              const row = {
+                fab: element.fab ? element.fab : '-',
+                dep: element.dep ? element.dep : '-',
+                employeeId: element.employeeId ? element.employeeId : '-',
+                name: element.name ? element.name : '-',
+                nbNumber: element.nbNumber ? element.nbNumber : '-',
+                user: element.user ? element.user : '-',
+                os: element.os ? element.os : '-',
+                logonTime: element.logonTime ? element.logonTime : '-',
+                borrowTime: element.borrowTime ? element.borrowTime : '-',
+                action: element.action ? element.action : '-',
+                productList: element.product,
+                production: '',
+                alert: false
+              }
+              // 計算開機時間是否超過20天
+              if (row.logonTime) {
+                const date1 = new Date(row.logonTime.split(' ')[0]);
+                const date2 = new Date();
+                const diffTime = Math.abs(date2 - date1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays > 20) row.alert = true
+              }
+              vum.tableData.push(row)
+            })
+          })
+        },
+        getRepairInfo () {
+          $.get("http://localhost/repairInfo", function (data) {
+            console.log(data)
+            vum.repairData = []
+            data.forEach((element) => {
+              const row = {
+                fab: element.fab ? element.fab : '-',
+                nbNumber: element.nbNumber ? element.nbNumber : '-',
+                repairDate: element.repairDate ? element.repairDate : '-',
+                returnDate: element.returnDate ? element.returnDate : '-',
+                brokenDate: element.brokenDate ? element.brokenDate : '-',
+              }
+              vum.repairData.push(row)
+            })
+          })
+        },
+        search () {
+          if (!vum.searchForm.product) {
+            $.get("http://localhost/info", function (data) {
+              vum.tableData = data;
+            })
+          } else {
+            $.get("http://localhost/search/" + vum.searchForm.product, function (data) {
+              vum.tableData = data;
+            })
+          }
+        },
+        handleDownload(index, row) {
+          window.open("http://localhost/download/" + row.nbNumber, "_blank");
+        },
+        handleDelete (index, row) {
+          e = this
+          $.get("http://localhost/deleteInfo/" + row.nbNumber, function (data) {
+            if (data.status === "failure") {
+              alert("刪除失敗");
+            } else {
+              alert("刪除成功");
+              e.getInfo()
+            }
+          })
+        },
+        exportForm () {
+          console.log(this.tableData)
+          const requestData = []
+          this.tableData.forEach((element) => {
+            const row = {
+              fab: element.fab,
+              dep: element.dep,
+              employeeId: element.employeeId,
+              name: element.name,
+              nbNumber: element.nbNumber,
+              user: element.user,
+              os: element.os,
+              logonTime: element.logonTime,
+              borrowTime: element.borrowTime,
+              action: element.action,
+              production: element.production
+            }
+            requestData.push(row)
+          })
+          // 先將table清單上傳至server產製excel後再download
+          $.ajax({
+            url: "http://localhost/export",
+            data: JSON.stringify(requestData),
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8"
+          }).done((data) => {
+            console.log(data)
+            if (data.status == 'success') {
+              window.open("http://localhost/exportSummary", "_blank");
+            }
+          })
+        },
+        showRepairDialog () {
+          this.dialogFormVisible = true
+        },
+        clearForm () {
+          this.form = {
+            fab: '',
+            nbNumber: '',
+            status: '',
+            overDate: '',
+            repairDate: new Date(),
+            returnDate: new Date(),
+            brokenDate: new Date()
+          }
+        },
+        formatTime(inputTime) {
+          var dd = String(inputTime.getDate()).padStart(2, '0')
+          var mm = String(inputTime.getMonth() + 1).padStart(2, '0')
+          var yyyy = inputTime.getFullYear()
+          var hours = String(inputTime.getHours()).padStart(2, '0')
+          var mins = String(inputTime.getMinutes()).padStart(2, '0')
+          var secs = String(inputTime.getSeconds()).padStart(2, '0')
+          let outputTime = yyyy + '/' + mm + '/' + dd + ' ' + hours + ':' + mins + ':' + secs
+          return outputTime
+        },
+        deleteRepair (index, row) {
+          e = this
+          $.get("http://localhost/deleteRepair/" + row.nbNumber, function (data) {
+            if (data.status === "failure") {
+              alert("刪除失敗");
+            } else {
+              alert("刪除成功");
+              e.getRepairInfo()
+            }
+          })
+        },
+        addRepair () {
+          console.log(this.form)
+          e = this
+          this.$refs.form.validate(valid => {
+            if (valid) {
+              if (this.form.status === 'repairing') {
+                this.form.returnDate = ''
+                this.form.brokenDate = ''
+                this.form.repairDate = this.formatTime(this.form.repairDate)
+              } else if (this.form.status === 'sunset') {
+                this.form.returnDate = ''
+                this.form.repairDate = ''
+                this.form.brokenDate = this.formatTime(this.form.brokenDate)
+              } else if (this.form.status === 'fixed') {
+                this.form.repairDate = ''
+                this.form.brokenDate = ''
+                this.form.returnDate = this.formatTime(this.form.returnDate)
+              }
+              $.ajax({
+                url: "http://localhost/repairRecord",
+                data: JSON.stringify(this.form),
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json;charset=utf-8",
+                success: function (r) {
+                  ELEMENT.Message.success("資料登錄成功!")
+                  e.clearForm()
+                  e.dialogFormVisible = false
+                  e.getRepairInfo()
+                },
+                error: function (r) {
+                  ELEMENT.Message.error("資料登錄失敗，請連絡系統管理員!");
+                },
+              }).done((data) => {
+                console.log(data)
+              })
+            }
+          })
+        },
+        showChart () {
+          e = this
+          $.get("http://localhost/chart1Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart1Option.legend.data = []
+            e.chart1Option.xAxis[0].data = []
+            e.chart1Option.series = []
+            data.data.forEach(item => {
+              if (!e.chart1Option.legend.data.includes(item.action)) {
+                e.chart1Option.legend.data.push(item.action)
+                e.chart1Option.series.push({
+                  name: item.action,
+                  type: 'bar',
+                  emphasis: {
+                    focus: 'series'
+                  },
+                  data: []
+                })
+              }
+              if (!e.chart1Option.xAxis[0].data.includes(item.date)) {
+                e.chart1Option.xAxis[0].data.push(item.date)
+              }
+            })
+            e.chart1Option.xAxis[0].data.forEach(xAxis => {
+              e.chart1Option.series.forEach(legend => {
+                //console.log(data.data)
+                let match = data.data.find(item => {
+                  return item.date == xAxis & item.action == legend.name
+                })
+                if (match != undefined) {
+                  legend.data.push(match['count'])
+                } else {
+                  legend.data.push(0)
+                }
+              })
+            })
+          })
+          $.get("http://localhost/chart2Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart2Option.series[0].data = []
+            data.data.forEach(item => {
+              e.chart2Option.series[0].data.push({'name': item.action, 'value': item.count})
+            })
+          })
+          $.get("http://localhost/chart3Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart3Option.legend.data = []
+            e.chart3Option.xAxis[0].data = []
+            e.chart3Option.series = []
+            data.data.forEach(item => {
+              if (!e.chart3Option.legend.data.includes(item.problem)) {
+                e.chart3Option.legend.data.push(item.problem)
+                e.chart3Option.series.push({
+                  name: item.problem,
+                  type: 'bar',
+                  emphasis: {
+                    focus: 'series'
+                  },
+                  data: []
+                })
+              }
+              if (!e.chart3Option.xAxis[0].data.includes(item.date)) {
+                e.chart3Option.xAxis[0].data.push(item.date)
+              }
+            })
+            e.chart3Option.xAxis[0].data.forEach(xAxis => {
+              e.chart3Option.series.forEach(legend => {
+                //console.log(data.data)
+                let match = data.data.find(item => {
+                  return item.date == xAxis & item.problem == legend.name
+                })
+                if (match != undefined) {
+                  legend.data.push(match['count'])
+                } else {
+                  legend.data.push(0)
+                }
+              })
+            })
+          })
+          $.get("http://localhost/chart4Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart4Option.series[0].data = []
+            data.data.forEach(item => {
+              e.chart4Option.series[0].data.push({'name': item.problem, 'value': item.count})
+            })
+          })
+          $.get("http://localhost/chart5Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart5Option.series[0].data = []
+            data.data.forEach(item => {
+              e.chart5Option.series[0].data.push({'name': item.fab, 'value': item.count})
+            })
+          })
+          $.get("http://localhost/chart6Option/"+this.range[0]+"/"+this.range[1], function (data) {
+            //console.log(data)
+            e.chart6Option.series[0].data = []
+            data.data.forEach(item => {
+              e.chart6Option.series[0].data.push({'name': item.fab, 'value': item.count})
+            })
+          })
+        },
+        logout () {
+          localStorage.removeItem("username");
+          window.location.href = "/login";
+        },
+      },
+    });
+  </script>
+  <style scope>
+    .el-header {
+      background-color: #b3c0d1;
+      color: #333;
+      line-height: 60px;
+    }
+    .active {
+      color: red;
+    }
+  </style>
+</html>

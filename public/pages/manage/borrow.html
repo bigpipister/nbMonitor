@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Auto Manage | Borrow</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  </head>
+  <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+      <!-- Navbar -->
+      <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+          </li>
+        </ul>
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item d-none d-sm-inline-block">
+            <a href="/" class="nav-link">Home</a>
+          </li>
+          <li class="nav-item d-none d-sm-inline-block">
+            <a href="#" class="nav-link">Contact</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Sidebar Container -->
+      <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/" class="brand-link">
+          <img src="../../dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+          <span class="brand-text font-weight-light">Auto Manage 1.0</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Sidebar Menu -->
+          <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+              <li class="nav-item">
+                <a href="/" class="nav-link">
+                  <i class="nav-icon fas fa-columns"></i>
+                  <p>
+                    使用者借閱/歸還
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/device" class="nav-link">
+                  <i class="nav-icon fas fa-table"></i>
+                  <p>
+                    筆電管理
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/repair" class="nav-link">
+                  <i class="nav-icon fas fa-plus-square"></i>
+                  <p>
+                    維修管理
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/analysis" class="nav-link">
+                  <i class="nav-icon fas fa-chart-pie"></i>
+                  <p>
+                    資料統計
+                  </p>
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Content Wrapper. Contains page content -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>使用者借閱/歸還</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a href="/">Home</a></li>
+                  <li class="breadcrumb-item active">使用者借閱/歸還</li>
+                </ol>
+              </div>
+            </div>
+          </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <!-- left column -->
+              <div class="col-md-12">
+                <!-- jquery validation -->
+                <div class="card card-primary">
+                  <div class="card-header">
+                    <h3 class="card-title">我是跑馬燈 <small>重要訊息公告!</small></h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div id="borrowComponent"></div>
+                  <!---
+                  <form id="borrowForm">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="fab">廠</label>
+                            <input name="fab" class="form-control" id="fab" placeholder="輸入廠">
+                          </div>
+                          <div class="form-group">
+                            <label for="dep">部門</label>
+                            <input name="dep" class="form-control" id="dep" placeholder="輸入部門">
+                          </div>
+                          <div class="form-group">
+                            <label for="employeeId">工號</label>
+                            <input name="employeeId" class="form-control" id="employeeId" placeholder="輸入工號">
+                          </div>
+                          <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input name="name" class="form-control" id="name" placeholder="輸入姓名">
+                          </div>
+                          <div class="form-group">
+                            <label for="nbNumber">筆電編號</label>
+                            <input name="nbNumber" class="form-control" id="nbNumber" placeholder="輸入筆電編號">
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label class="col-form-label"><i class="fas fa-check"></i>筆電配件</label>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">滑鼠</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">充電線</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">筆電包</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">網路線</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">其它</label>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label class="col-form-label"><i class="far fa-bell"></i>借用/歸還/續借</label>
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="action" checked>
+                              <label class="form-check-label">借用</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="action">
+                              <label class="form-check-label">歸還</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="action">
+                              <label class="form-check-label">續借</label>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label class="col-form-label"><i class="far fa-times-circle"></i>問題反饋</label>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">藍屏</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">黑屏</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">重開</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">WIFI連不上</label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox">
+                              <label class="form-check-label">其它原因</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary">送出</button>
+                    </div>
+                  </form>
+                  -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <!--/.col (left) -->
+            </div>
+          </div><!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+      </div>
+      <!-- /.content-wrapper -->
+      <footer class="main-footer">
+        <div class="float-right d-none d-sm-block">
+          <b>Version</b> 1.0.0
+        </div>
+        <strong>Copyright &copy; 2021-2022 <a href="/">AutoManage.org</a>.</strong> All rights reserved.
+      </footer>
+
+      <!-- Control Sidebar -->
+      <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+      </aside>
+      <!-- /.control-sidebar -->
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="../../dist/js/adminlte.min.js"></script>
+    <!-- jquery-validation -->
+    <script src="../../plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="../../plugins/jquery-validation/additional-methods.min.js"></script>
+    <!-- Axios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+    <!-- This is what supports JSX compilation (and other transformations) -->
+    <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js"></script>
+    <!-- These are for React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
+
+    <!-- React 載入 BorrowForm 元件 -->
+    <script src="../../dist/js/pages/borrow.js" type="text/babel"></script>
+    <!--script>
+      window.addEventListener('load', function() {
+        $.validator.setDefaults({
+          submitHandler: function () {
+            alert( "表單送出成功!" );
+          }
+        });
+        $('#borrowForm').validate({
+          rules: {
+            fab: {
+              required: true,
+            },
+            dep: {
+              required: true,
+            },
+            employeeId: {
+              required: true
+            },
+            name: {
+              required: true
+            },
+            nbNumber: {
+              required: true
+            },
+          },
+          messages: {
+            fab: {
+              required: "請輸入廠名"
+            },
+            dep: {
+              required: "請輸入部門名"
+            },
+            employeeId: {
+              required: "請輸入工號"
+            },
+            name: {
+              required: "請輸入姓名"
+            },
+            nbNumber: {
+              required: "請輸入筆電編號"
+            }
+          },
+          errorElement: 'span',
+          errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback');
+            element.closest('.form-group').append(error);
+          },
+          highlight: function (element, errorClass, validClass) {
+            $(element).addClass('is-invalid');
+          },
+          unhighlight: function (element, errorClass, validClass) {
+            $(element).removeClass('is-invalid');
+          }
+        });
+      });
+    </script-->
+  </body>
+</html>
