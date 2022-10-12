@@ -8,15 +8,15 @@ const BorrowForm = (props) => {
   const partValues = ['滑鼠','充電線','筆電包','網路線','其它']
   const [checkedParts, setCheckedParts] = useState(
     new Array(partValues.length).fill(false)
-  );
+  )
   const actionValues = ['借用','歸還','續借']
   const [checkedActions, setCheckedActions] = useState(
     [true, false, false]
-  );
+  )
   const problemValues = ['藍屏','黑屏','重開','WIFI連不上','其它原因']
   const [checkedProblems, setCheckedProblems] = useState(
     new Array(problemValues.length).fill(false)
-  );
+  )
 
   let handleSubmit = async (e) => {
     let parts = []
@@ -53,6 +53,7 @@ const BorrowForm = (props) => {
     if (!confirmDialog) {
       return;
     }
+
     e.preventDefault();
     var today = new Date()
     var dd = String(today.getDate()).padStart(2, '0')
@@ -62,6 +63,7 @@ const BorrowForm = (props) => {
     var mins = String(today.getMinutes()).padStart(2, '0')
     var secs = String(today.getSeconds()).padStart(2, '0')
     const currentTime = yyyy + '/' + mm + '/' + dd + ' ' + hours + ':' + mins + ':' + secs
+
     try {
       let res = await fetch("http://localhost/rentRecord", {
         method: "POST",
@@ -74,7 +76,7 @@ const BorrowForm = (props) => {
           parts: parts,
           action: action,
           problems: problems,
-          currentTime: currentTime
+          registerTime: currentTime
         }),
       });
       console.log(res);

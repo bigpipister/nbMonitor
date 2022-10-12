@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    <!-- Jquery DataTable style -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
   </head>
   <body class="hold-transition sidebar-mini">
     <div class="wrapper">
@@ -111,7 +113,7 @@
             <div class="row">
               <div class="col-12">
                 <div class="card">
-                  <div class="card-header">
+                  <!--div class="card-header">
                     <div class="card-tools">
                       <div class="input-group input-group-sm" style="width: 150px;">
                         <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
@@ -123,26 +125,25 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div-->
                   <!-- /.card-header -->
                   <div class="card-body table-responsive p-0" style="height: 450px;">
-                    <table class="table table-head-fixed text-nowrap">
+                    <table id="deviceTable" style="width:100%"
+                           class="table table-head-fixed text-nowrap">
                       <thead>
                         <tr>
                           <th>廠</th>
                           <th>電腦名稱</th>
                           <th>最後登入帳號</th>
-                          <th>借用人</th>
-                          <th>借用人的部門</th>
-                          <th>歸還人</th>
-                          <th>歸還人的部門</th>
-                          <th>歸還日期/時間</th>
+                          <th>登記人</th>
+                          <th>登記人的部門</th>
+                          <th>登記日期/時間</th>
                           <th>廠牌型號</th>
                           <th>最近開機的時間</th>
                           <th>狀態</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <!--tbody>
                         <tr>
                           <td>廠一</td>
                           <td>DESKTOP-PFFJE84</td>
@@ -156,7 +157,7 @@
                           <td>2022-10-09 13:20:20</td>
                           <td>借用</td>
                         </tr>
-                      </tbody>
+                      </tbody-->
                     </table>
                   </div>
                   <!-- /.card-body -->
@@ -186,20 +187,53 @@
 
     <!-- jQuery -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- jQuery DataTables -->
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="../../dist/js/adminlte.min.js"></script>
     <!-- Axios -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
-    <!-- React -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- This is what supports JSX compilation (and other transformations) -->
+    <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js"></script>
+    <!-- These are for React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
 
     <script>
       axios.get("http://localhost/info").then(function (response) {
         console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
+        $('#deviceTable').DataTable({
+          data: response.data,
+          columns: [
+              { "data": "fab" },
+              { "data": "nbName" },
+              { "data": "user" },
+              { "data": "name" },
+              { "data": "dep" },
+              { "data": "registerTime" },
+              { "data": "os" },
+              { "data": "logonTime" },
+              { "data": "action" }
+          ],
+          language: {
+            "sProcessing": "處理中....",
+            "sLengthMenu": "顯示 _MENU_ 項結果",
+            "sZeroRecords": "沒有匹配結果",
+            "sSearch": "搜索",
+            "sInfo": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+            "sInfoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+            "sEmptyTable": "表中數據為空",
+            "sLoadingRecords": "載入中...",
+            "oPaginate": {
+              "sFirst": "首頁",
+              "sPrevious": "上頁",
+              "sNext": "下頁",
+              "sLast": "未頁"
+            }
+          }
+        });
       })
     </script>
   </body>

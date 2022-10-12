@@ -1,4 +1,4 @@
-﻿fab,dep,employeeId,name,nbNumber,parts,action,currentTime,problems
+﻿fab,dep,employeeId,name,nbNumber,parts,action,registerTime,problems
 a,a,a,a,a,滑鼠,借用,2022/05/02 10:13:11,無
 a,a,a,a,a,滑鼠,歸還,2022/05/02 11:22:38,藍屏
 a,a,a,a,a,滑鼠,續借,2022/05/02 11:22:43,藍屏
@@ -24,3 +24,5 @@ a,a,a,a,a,,,2022/10/10 16:12:48,
 a,a,a,a,a,,,2022/10/10 16:18:02,
 a,b,c,d,e,,,2022/10/10 16:22:33,
 a,a,a,a,a,滑鼠、充電線、筆電包、網路線、其它,續借,2022/10/10 19:22:42,藍屏、黑屏、重開、WIFI連不上、其它原因
+廠一,部門A,A12345,王小明,DESKTOP-PFFJE84,滑鼠、充電線、筆電包、網路線、其它,借用,2022/10/11 09:26:04,藍屏
+a,a,a,a,a,,借用,2022/10/11 21:43:07,

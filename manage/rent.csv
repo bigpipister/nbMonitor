@@ -1,5 +1,6 @@
-﻿fab,dep,employeeId,name,nbNumber,parts,action,currentTime,problems
-廠一,部門A,A12345,王小明,DESKTOP-PFFJE84,滑鼠、充電線,借用,2022/05/01 19:51:45,無
+﻿fab,dep,employeeId,name,nbNumber,parts,action,registerTime,problems
 廠二,部門B,B12345,張大偉,DESKTOP-PFFJE85,滑鼠、充電線、筆電包,歸還,2022/05/04 14:43:28,藍屏、黑屏、重開、WIFI連不上、其它原因
 廠三,部門C,C12345,林東西,DESKTOP-PFFJE86,滑鼠,借用,2022/05/05 09:28:45,無
 廠四,部門D,D12345,陳小小,DESKTOP-PFFJE87,充電線,歸還,2022/05/05 10:45:14,黑屏
+廠一,部門A,A12345,王小明,DESKTOP-PFFJE84,滑鼠、充電線、筆電包、網路線、其它,借用,2022/10/11 09:26:04,藍屏
+a,a,a,a,a,,借用,2022/10/11 21:43:07,

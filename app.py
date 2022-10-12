@@ -35,39 +35,6 @@ def upload_file():
     except Exception:
         print(traceback.format_exc())
 
-# 接收設備借用頁面上傳的資料
-@app.route('/rentRecord', methods = ['POST'])
-def rent_record():
-    try:
-        if request.method == 'POST':
-            #datename = 'rent'+datetime.today().strftime('%Y-%m-%d')+'.csv'
-            body = request.get_data(as_text=True)  # 取得收到的訊息內容
-            json_data = json.loads(body) # json 格式化訊息內容
-            json_data["parts"] = '、'.join(json_data["parts"])
-            json_data["problems"] = '、'.join(json_data["problems"])
-            #print(json_data)
-            df = pd.json_normalize(json_data)
-            # 更新最新借用狀態
-            if os.path.exists(os.path.join("manage/rent.csv")):
-                rentDf = pd.read_csv ("manage/rent.csv")
-                # 只保留最新一筆
-                rentDf = rentDf[~rentDf.nbNumber.str.contains(json_data['nbNumber'])]
-                result = pd.concat([rentDf, df])
-                result.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
-            else:
-                df.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
-            # 儲存借用歷史
-            if os.path.exists(os.path.join("manage/history.csv")):
-                rentDf = pd.read_csv ("manage/history.csv")
-                result = pd.concat([rentDf, df])
-                result.to_csv("manage/history.csv",encoding='utf_8_sig',index=False)
-            else:
-                df.to_csv("manage/history.csv",encoding='utf_8_sig',index=False)
-            response = {"status": 'success'}
-            return jsonify(response)
-    except Exception:
-        print(traceback.format_exc())
-
 # 接收設備維修頁面上傳的資料
 @app.route('/repairRecord', methods = ['POST'])
 def repair_record():
@@ -76,13 +43,13 @@ def repair_record():
             #datename = 'rent'+datetime.today().strftime('%Y-%m-%d')+'.csv'
             body = request.get_data(as_text=True)  # 取得收到的訊息內容
             json_data = json.loads(body) # json 格式化訊息內容
-            #print(json_data)
+            print(json_data)
             df = pd.json_normalize(json_data)
             # 更新最新維修狀態
             if os.path.exists(os.path.join("manage/repair.csv")):
                 repairDf = pd.read_csv ("manage/repair.csv")
                 # 只保留最新一筆
-                repairDf = repairDf[~repairDf.nbNumber.str.contains(json_data['nbNumber'])]
+                repairDf = repairDf[~repairDf.nbNumber.str.contains(json_data['nbNumber'])] # 移除符合條件的row data
                 result = pd.concat([repairDf, df])
                 result.to_csv("manage/repair.csv",encoding='utf_8_sig',index=False)
             else:
@@ -95,13 +62,94 @@ def repair_record():
 # 列出所有維修清單
 @app.route('/repairInfo', methods = ['GET'])
 def repair_info():
-    if os.path.exists(os.path.join("manage/repair.csv")):
-        repairDf = pd.read_csv ("manage/repair.csv")
-        repairString = repairDf.to_json(orient = 'records')
-        repairJson = json.loads(repairString)
-        #print(repairJson)
-        #print(jsonify(repairJson))
-    return jsonify(repairJson)
+    try:
+        if request.method == 'GET':
+            # 整理所有維修表單
+            repairData = {} # 以筆電編號當 key
+            if os.path.exists(os.path.join("manage/repair.csv")):
+                with open(os.path.join("manage/repair.csv"),"r",encoding="utf-8") as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        if line.split(",")[1] == "nbNumber":
+                            continue
+                        repairData[line.split(",")[1]] = line.split(",")
+            
+             # 整理所有上傳資料
+            nbList = glob.glob("data/*_info.txt")
+            
+            # ------------------------------以上傳資料為主去走訪-------------------------------
+            nameList = []
+            for nb in nbList:
+                nameList.append(ntpath.basename(nb.split("_info")[0])) # 取得所有有上傳資料的電腦名稱(=筆電編號 nbNumber)
+            nbInfo = {}
+            for name in nameList: # 走訪每台電腦取得所需資訊
+                info = {}
+                info["nbName"] = name
+                info["nbNumber"] = name
+                with open(os.path.join("data/", name + '_info.txt')) as f:
+                    lines = f.readlines()
+                    values = lines[1].split(",")
+                    info["os"] =  values[13].replace('"','') + ' ' + values[14].replace('"','') # 取得硬體資訊
+                if os.path.exists(os.path.join("data/", name + '_logon.txt')):
+                    with open(os.path.join("data/", name + '_logon.txt')) as f:
+                        lines = f.readlines()
+                        user = ""
+                        time = 0
+                        for line in lines:
+                            if len(line.split()) <= 6:
+                                continue
+                            else:
+                                user = line.split()[0].strip()
+                                user = user[1:len(user)]
+                                time = line.split()[5].strip()+' '+line.split()[6].strip()+' '+line.split()[7].strip()
+                        info["user"] = user # 取得最後登入者
+                        info["logonTime"] = time # 取得最後登入時間
+                if os.path.exists(os.path.join("data/", name + '_product.txt')):
+                    productList = []
+                    with open(os.path.join("data/", name + '_product.txt'), encoding='utf-16') as f:
+                        lines = f.readlines()
+                        for line in lines:
+                            if ('Name' in line) and ('Version' in line):
+                                continue
+                            if len(line.split(",")) == 3:
+                                if line.split(",")[1] and line.split(",")[2]:
+                                    item = {}
+                                    item["name"] = line.split(",")[1]
+                                    item["version"] = line.split(",")[2].replace('\n',"").replace('\t',"")
+                                    productList.append(item["name"]+":"+item["version"])       
+                        info["product"] = productList # 取得軟體清單:版本資訊
+                nbInfo[name] = info
+
+            # ------------------------------維修表單整合上傳資料-------------------------------
+            response = []
+            for name in repairData.keys():
+                repairInfo = {}
+                repairInfo['fab'] = repairData[name][0]
+                repairInfo['nbNumber'] = repairData[name][1]
+                repairInfo['formNo'] = repairData[name][2]
+                repairInfo['repairStatus'] = repairData[name][3]
+                repairInfo['overDate'] = repairData[name][4]
+                repairInfo['registerDate'] = repairData[name][5]
+                repairInfo['remark'] = repairData[name][6]
+                if name in nameList:
+                    repairInfo['os'] = nbInfo[name]['os']
+                    repairInfo['logonTime'] = nbInfo[name]['logonTime']
+                else:
+                    repairInfo['os'] = '-'
+                    repairInfo['logonTime'] = '-'
+                response.append(repairInfo)
+            return jsonify(response)
+
+            #print(repairData)
+            #if os.path.exists(os.path.join("manage/repair.csv")):
+            #    repairDf = pd.read_csv ("manage/repair.csv")
+            #    repairString = repairDf.to_json(orient = 'records')
+            #    repairJson = json.loads(repairString)
+            #    #print(repairJson)
+            #    #print(jsonify(repairJson))
+            #return jsonify(repairJson)
+    except Exception:
+        print(traceback.format_exc())
 
 # 刪除指定維修的資料
 @app.route('/deleteRepair/<path:filename>', methods = ['GET'])
@@ -119,20 +167,46 @@ def deleteRepair(filename):
         response = {"status": 'failure'}
         return jsonify(response)
 
+# 接收設備借用頁面上傳的資料
+@app.route('/rentRecord', methods = ['POST'])
+def rent_record():
+    try:
+        if request.method == 'POST':
+            #datename = 'rent'+datetime.today().strftime('%Y-%m-%d')+'.csv'
+            body = request.get_data(as_text=True)  # 取得收到的訊息內容
+            json_data = json.loads(body) # json 格式化訊息內容
+            json_data["parts"] = '、'.join(json_data["parts"])
+            json_data["problems"] = '、'.join(json_data["problems"])
+            #print(json_data)
+            df = pd.json_normalize(json_data)
+            # 更新最新借用狀態
+            if os.path.exists(os.path.join("manage/rent.csv")):
+                rentDf = pd.read_csv ("manage/rent.csv")
+                # 只保留最新一筆
+                rentDf = rentDf[~rentDf.nbNumber.str.contains(json_data['nbNumber'])] # 移除符合條件的row data
+                result = pd.concat([rentDf, df])
+                result.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
+            else:
+                df.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
+            # 儲存借用歷史
+            if os.path.exists(os.path.join("manage/history.csv")):
+                rentDf = pd.read_csv ("manage/history.csv")
+                result = pd.concat([rentDf, df])
+                result.to_csv("manage/history.csv",encoding='utf_8_sig',index=False)
+            else:
+                df.to_csv("manage/history.csv",encoding='utf_8_sig',index=False)
+            response = {"status": 'success'}
+            return jsonify(response)
+    except Exception:
+        print(traceback.format_exc())
+        
 # 列出所有pc清單
 @app.route('/info', methods = ['GET'])
 def nb_info():
     try:
         if request.method == 'GET':
             # 整理所有管理表單
-            #manageList = glob.glob("manage/*")
             manageData = {} # 以筆電編號當 key
-            #for manage in manageList:
-            #    with open(os.path.join(manage),"r",encoding="utf-8") as f:
-            #        lines = f.readlines()
-            #        for line in lines:
-            #            manageData[line.split(",")[4]] = line.split(",")
-
             if os.path.exists(os.path.join("manage/rent.csv")):
                 with open(os.path.join("manage/rent.csv"),"r",encoding="utf-8") as f:
                     lines = f.readlines()
@@ -144,10 +218,11 @@ def nb_info():
 
             # 整理所有上傳資料
             nbList = glob.glob("data/*_info.txt")
+
             # ------------------------------以上傳資料為主去走訪-------------------------------
             nameList = []
             for nb in nbList:
-                nameList.append(ntpath.basename(nb.split("_info")[0])) # 取得所有有上傳資料的電腦名稱
+                nameList.append(ntpath.basename(nb.split("_info")[0])) # 取得所有有上傳資料的電腦名稱(=筆電編號 nbNumber)
             response = []
             for name in nameList: # 走訪每台電腦取得所需資訊
                 info = {}
@@ -187,24 +262,30 @@ def nb_info():
                         info["product"] = productList # 取得軟體清單:版本資訊
 
                 if info["nbName"] in manageData.keys(): # 整合借用資料
-                    # print(manageData[info["name"]][1])
-                    # print(manageData[info["name"]][2])
-                    # print(manageData[info["name"]][4])
-                    info["fab"] = manageData[info["nbName"]][0]
-                    info["dep"] = manageData[info["nbName"]][1]
-                    info["employeeId"] = manageData[info["nbName"]][2]
-                    info["name"] = manageData[info["nbName"]][3]
-                    #info["nbNumber"] = manageData[info["nbName"]][4]
-                    info["parts"] = manageData[info["nbName"]][5]
-                    info["action"] = manageData[info["nbName"]][6]
-                    info["borrowTime"] = manageData[info["nbName"]][7]
-                    info["problems"] = manageData[info["nbName"]][8]
+                    info["fab"] = manageData[info["nbName"]][0] if manageData[info["nbName"]][0] else '-'
+                    info["dep"] = manageData[info["nbName"]][1] if manageData[info["nbName"]][1] else '-'
+                    info["employeeId"] = manageData[info["nbName"]][2] if manageData[info["nbName"]][2] else '-'
+                    info["name"] = manageData[info["nbName"]][3] if manageData[info["nbName"]][3] else '-'
+                    info["parts"] = manageData[info["nbName"]][5] if manageData[info["nbName"]][5] else '-'
+                    info["action"] = manageData[info["nbName"]][6] if manageData[info["nbName"]][6] else '-'
+                    info["registerTime"] = manageData[info["nbName"]][7] if manageData[info["nbName"]][7] else '-'
+                    info["problems"] = manageData[info["nbName"]][8] if manageData[info["nbName"]][8] else '-'
+                else:
+                    info["fab"] = '-'
+                    info["dep"] = '-'
+                    info["employeeId"] = '-'
+                    info["name"] = '-'
+                    info["parts"] = '-'
+                    info["action"] = '-'
+                    info["registerTime"] = '-'
+                    info["problems"] = '-'
                 response.append(info)
+            
             # ------------------------------以借用資料為主去走訪-------------------------------
             #print(manageData.keys())
             #print(nameList)
             for name in manageData.keys():
-                if not name in nameList:
+                if not name in nameList: # 補上有借用資料但沒上傳資料的筆電
                     #print(name)
                     info = {}
                     info["nbName"] = name
@@ -215,8 +296,11 @@ def nb_info():
                     info["nbNumber"] = manageData[info["nbName"]][4]
                     info["parts"] = manageData[info["nbName"]][5]
                     info["action"] = manageData[info["nbName"]][6]
-                    info["currentTime"] = manageData[info["nbName"]][7]
+                    info["registerTime"] = manageData[info["nbName"]][7]
                     info["problems"] = manageData[info["nbName"]][8]
+                    info["user"] = '-' # 最後登入者
+                    info["logonTime"] = '-' # 最後登入時間
+                    info["os"] = '-' # 廠牌型號
                     response.append(info)
             return jsonify(response)
     except Exception:
@@ -386,11 +470,11 @@ def chart1Option(startDate, endDate):
             response = {'data': []}
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
-                df["currentTime"] = pd.to_datetime(df["currentTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
                 if delta.days <= 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
                 elif delta.days > 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m')
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m')
 
                 group_count = df.groupby(["date", "action"], as_index=False)["name"].count() #先分組
                 group_count = group_count.rename(columns={"name": "count"}, inplace=False)
@@ -430,11 +514,11 @@ def chart3Option(startDate, endDate):
             response = {'data': []}
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
-                df["currentTime"] = pd.to_datetime(df["currentTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
                 if delta.days <= 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
                 elif delta.days > 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m')
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m')
                 
                 group_count1 =  df.groupby(['date'])['problems'].apply(lambda x: x[x.str.contains('藍屏')].count()).reset_index(name="count")
                 group_count1['problem'] = '藍屏'
@@ -467,11 +551,11 @@ def chart4Option(startDate, endDate):
             response = {'data': []}
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
-                df["currentTime"] = pd.to_datetime(df["currentTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
                 if delta.days <= 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
                 elif delta.days > 7:
-                    df["date"] = df["currentTime"].dt.strftime('%Y-%m')
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m')
 
                 group_count1 =  df.groupby(['date'])['problems'].apply(lambda x: x[x.str.contains('藍屏')].count()).reset_index(name="count")
                 group_count1['problem'] = '藍屏'
@@ -518,8 +602,8 @@ def chart6Option(startDate, endDate):
             response = {'data': []}
             if os.path.exists(os.path.join("manage/repair.csv")):
                 df = pd.read_csv ("manage/repair.csv")
-                group_count = df.groupby(["fab"], as_index=False)["status"].apply(lambda x: x[x.str.contains('repairing')].count())
-                group_count = group_count.rename(columns={"status": "count"}, inplace=False)
+                group_count = df.groupby(["fab"], as_index=False)["repairStatus"].apply(lambda x: x[x.str.contains('repairing')].count())
+                group_count = group_count.rename(columns={"repairStatus": "count"}, inplace=False)
                 group_count.index = range(len(group_count)) #重新排序index
                 #print(group_count)
                 response["data"] = json.loads(group_count.to_json(orient = 'records'))
