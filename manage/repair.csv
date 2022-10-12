@@ -1,3 +1,5 @@
 ﻿fab,nbNumber,formNo,repairStatus,overDate,registerDate,remark
 廠二,bbb,456,廠商已修復並歸還,否,2022/05/25,test
-廠一,aaa,123,廠商已修復並歸還,否,2022/05/04,aaa
+廠一,aaa,123,廠商已修復並歸還,否,2022/10/12,test
+aa,a,aa,待送給原廠維修,否,2022/10/12,
+c,c,c,待送給原廠維修,是,2022/10/12,

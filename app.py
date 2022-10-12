@@ -49,7 +49,7 @@ def repair_record():
             if os.path.exists(os.path.join("manage/repair.csv")):
                 repairDf = pd.read_csv ("manage/repair.csv")
                 # 只保留最新一筆
-                repairDf = repairDf[~repairDf.nbNumber.str.contains(json_data['nbNumber'])] # 移除符合條件的row data
+                repairDf = repairDf[repairDf.nbNumber.str.strip() != json_data['nbNumber']] # 移除符合條件的row data
                 result = pd.concat([repairDf, df])
                 result.to_csv("manage/repair.csv",encoding='utf_8_sig',index=False)
             else:
@@ -183,7 +183,7 @@ def rent_record():
             if os.path.exists(os.path.join("manage/rent.csv")):
                 rentDf = pd.read_csv ("manage/rent.csv")
                 # 只保留最新一筆
-                rentDf = rentDf[~rentDf.nbNumber.str.contains(json_data['nbNumber'])] # 移除符合條件的row data
+                rentDf = rentDf[rentDf.nbNumber.str.strip() != json_data['nbNumber']] # 移除符合條件的row data
                 result = pd.concat([rentDf, df])
                 result.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
             else:

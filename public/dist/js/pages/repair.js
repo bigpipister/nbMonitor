@@ -1,14 +1,30 @@
 class RepairForm extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {
-      action: props.repairData.action === 'edit' ? '維修資料編輯' : '維修資料新增',
-      fab: props.repairData.fab ? props.repairData.fab : '',
-      nbNumber: props.repairData.nbNumber ? props.repairData.nbNumber : '',
-      formNo: props.repairData.formNo ? props.repairData.formNo : '',
-      repairStatus: "ready",
-      checkedOverdate: [false, true],
-      remark: props.repairData.remark ? props.repairData.remark : '',
+    if (props.action === 'edit') {
+      this.state = {
+        action: '維修資料編輯',
+        fab: props.repairData.fab ? props.repairData.fab : '',
+        nbNumber: props.repairData.nbNumber ? props.repairData.nbNumber : '',
+        formNo: props.repairData.formNo ? props.repairData.formNo : '',
+        repairStatus: props.repairData.repairStatus,
+        checkedOverdate: props.repairData.overDate === '是' ? [true, false] : [false, true],
+        remark: props.repairData.remark ? props.repairData.remark : '',
+        isDisabled: true,
+        repairList: [],
+      }
+    } else {
+      this.state = {
+        action: '維修資料新增',
+        fab: '',
+        nbNumber: '',
+        formNo: '',
+        repairStatus: "待送給原廠維修",
+        checkedOverdate: [false, true],
+        remark: '',
+        isDisabled: false,
+        repairList: props.repairList,
+      }
     }
   }
 
@@ -16,24 +32,35 @@ class RepairForm extends React.Component {
 
   statusOptions = [
     {
-      value: "廠商維修中",
-      label: "廠商維修中",
-    },
-    {
-      value: "已報廢除帳",
-      label: "已報廢除帳",
-    },
-    {
       value: "待送給原廠維修",
       label: "待送給原廠維修",
+    },
+    {
+      value: "廠商維修中",
+      label: "廠商維修中",
     },
     {
       value: "廠商已修復並歸還",
       label: "廠商已修復並歸還",
     },
+    {
+      value: "已報廢除帳",
+      label: "已報廢除帳",
+    },
   ]
 
   handleSubmit = async (e) => {
+    let match = false
+    this.state.repairList.forEach(item => {
+      if (this.state.nbNumber === item.nbNumber) {
+        match = true
+      }
+    })
+    if (match) {
+      alert('筆電編號不得重覆!')
+      reutrn
+    }
+    
     let overDate = ""
 
     this.overDateValues.forEach((item, index) => {
@@ -41,6 +68,7 @@ class RepairForm extends React.Component {
         overDate = item
       }
     })
+    console.log(overDate)
 
     let registerDate = $("#registerDate").datepicker("getDate");
     let formatDate = $.datepicker.formatDate("yy/mm/dd", registerDate)
@@ -50,19 +78,19 @@ class RepairForm extends React.Component {
       let res = await fetch("http://localhost/repairRecord", {
         method: "POST",
         body: JSON.stringify({
-          fab: this.state.fab,
-          nbNumber: this.state.nbNumber,
-          formNo: this.state.formNo,
-          repairStatus: this.state.repairStatus,
-          overDate: overDate,
+          fab: this.state.fab.trim(),
+          nbNumber: this.state.nbNumber.trim(),
+          formNo: this.state.formNo.trim(),
+          repairStatus: this.state.repairStatus.trim(),
+          overDate: overDate.trim(),
           registerDate: formatDate,
-          remark: this.state.remark
+          remark: this.state.remark.trim()
         }),
       });
       console.log(res);
       let resJson = await res.json();
       console.log(resJson);
-      if (res.status === 200 && resJson.status === 'success') {
+      if (res.status === 200) {
         alert("表單送出成功!");
       } else {
         alert("表單送出失敗!");
@@ -113,6 +141,7 @@ class RepairForm extends React.Component {
                           className="form-control"
                           id="nbNumber"
                           placeholder="輸入筆電編號"
+                          disabled={this.state.isDisabled}
                         />
                       </div>
                       <div className="form-group">

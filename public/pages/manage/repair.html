@@ -178,7 +178,7 @@
                       <thead>
                         <tr>
                           <th>廠</th>
-                          <th>電腦名稱</th>
+                          <th>筆電編號</th>
                           <th>廠牌型號</th>
                           <th>申請單號</th>
                           <th>是否過保</th>
@@ -257,6 +257,7 @@
     <script type="text/babel">
       axios.get("http://localhost/repairInfo").then(function (response) {
         console.log(response.data);
+        // 初始化資料表
         var table = $("#repairTable").DataTable({
           data: response.data,
           columns: [
@@ -287,6 +288,7 @@
             },
           },
         });
+        // 資料表 row select 處理
         $("#repairTable").on("click", "tr", function () {
           if ($(this).hasClass("selected")) {
             $(this).removeClass("selected");
@@ -302,6 +304,69 @@
             $("#deleteButton").attr("disabled", true);
           }
         });
+        // 新增事件處理
+        $("#addButton").click(function () {
+          ReactDOM.render(
+            <RepairForm key={new Date()} action="add" 
+                        repairList={response.data} />,
+            document.querySelector("#repairComponent")
+          );
+          // add date picker
+          $("#registerDate").datepicker({ dateFormat: "yy/mm/dd" })
+          $("#registerDate").datepicker("setDate", new Date());
+          // add form validate
+          $.validator.setDefaults({
+            submitHandler: async function () {
+              try {
+                //alert("表單送出成功!");
+              } catch (err) {
+                console.log(err);
+              }
+            },
+          });
+          $("#repairForm").validate({
+            rules: {
+              fab: {
+                required: true,
+              },
+              dep: {
+                required: true,
+              },
+              nbNumber: {
+                required: true,
+              },
+              formNo: {
+                required: true,
+              },
+            },
+            messages: {
+              fab: {
+                required: "請輸入廠名",
+              },
+              dep: {
+                required: "請輸入部門名",
+              },
+              nbNumber: {
+                required: "請輸入筆電編號",
+              },
+              formNo: {
+                required: "請輸入申請單號",
+              },
+            },
+            errorElement: "span",
+            errorPlacement: function (error, element) {
+              error.addClass("invalid-feedback");
+              element.closest(".form-group").append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+              $(element).addClass("is-invalid");
+            },
+            unhighlight: function (element, errorClass, validClass) {
+              $(element).removeClass("is-invalid");
+            },
+          });
+        });
+        // 修改事件處理
         $("#editButton").click(function () {
           ReactDOM.render(
             <RepairForm key={new Date()} action="edit"

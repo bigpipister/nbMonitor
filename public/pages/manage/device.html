@@ -204,6 +204,7 @@
     <script>
       axios.get("http://localhost/info").then(function (response) {
         console.log(response.data)
+        // 初始化資料表
         $('#deviceTable').DataTable({
           data: response.data,
           columns: [
