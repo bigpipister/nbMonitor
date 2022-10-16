@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Auto Manage | Analysis</title>
 
-    <!-- Google Font: Source Sans Pro -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
-    />
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
@@ -17,6 +12,11 @@
     />
     <!-- Theme style -->
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css" />
+    <!-- daterange picker -->
+    <link
+      rel="stylesheet"
+      href="../../plugins/daterangepicker/daterangepicker.css"
+    />
   </head>
   <body class="hold-transition sidebar-mini">
     <div class="wrapper">
@@ -32,11 +32,11 @@
         </ul>
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-          <li class="nav-item d-none d-sm-inline-block">
+          <!--li class="nav-item d-none d-sm-inline-block">
             <a href="/" class="nav-link">Home</a>
-          </li>
+          </li-->
           <li class="nav-item d-none d-sm-inline-block">
-            <a href="#" class="nav-link">Contact</a>
+            <a href="/login" class="nav-link">登出</a>
           </li>
         </ul>
       </nav>
@@ -118,31 +118,25 @@
         <!-- Main content -->
         <section class="content">
           <div class="container-fluid">
+            <div class="row">
+              <div class="form-group">
+                <label for="dates" style="margin-left: 10px">日期區間</label>
+                <input size="40" name="dates" />
+              </div>
+              <button
+                id="searchButton"
+                class="btn btn-sm btn-info"
+                style="height: 30px; margin-left: 5px"
+              >
+                搜尋
+              </button>
+            </div>
             <!-- /.row -->
             <div class="row">
               <div class="col-12">
                 <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">借用/歸還/續借 總量使用狀況</h3>
-                    <div class="card-tools">
-                      <div
-                        class="input-group input-group-sm"
-                        style="width: 150px"
-                      >
-                        <input
-                          type="text"
-                          name="table_search"
-                          class="form-control float-right"
-                          placeholder="Search"
-                        />
-
-                        <div class="input-group-append">
-                          <button type="submit" class="btn btn-default">
-                            <i class="fas fa-search"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <h3 class="card-title">借用/歸還/續借 總量使用狀況 - 長條圖</h3>
                   </div>
                   <!-- /.card-header -->
                   <div
@@ -150,6 +144,90 @@
                     style="height: 450px"
                   >
                     <div id="chart1" style="width: 800px; height: 450px"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">借用/歸還/續借 總量使用狀況 - 圓餅圖</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div
+                    class="card-body table-responsive p-0"
+                    style="height: 450px"
+                  >
+                    <div id="chart2" style="width: 800px; height: 450px"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">問題反饋 - 長條圖</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div
+                    class="card-body table-responsive p-0"
+                    style="height: 450px"
+                  >
+                    <div id="chart3" style="width: 800px; height: 450px"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">問題反饋 - 圓餅圖</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div
+                    class="card-body table-responsive p-0"
+                    style="height: 450px"
+                  >
+                    <div id="chart4" style="width: 800px; height: 450px"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+            </div>
+             <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">各廠目前庫前狀況</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div
+                    class="card-body table-responsive p-0"
+                    style="height: 450px"
+                  >
+                    <div id="chart5" style="width: 800px; height: 450px"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">各廠目前維修狀況</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div
+                    class="card-body table-responsive p-0"
+                    style="height: 450px"
+                  >
+                    <div id="chart6" style="width: 800px; height: 450px"></div>
                   </div>
                   <!-- /.card-body -->
                 </div>
@@ -182,107 +260,366 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- date range picker -->
+    <script src="../../plugins/daterangepicker/moment.min.js"></script>
+    <script src="../../plugins/daterangepicker/daterangepicker.js"></script>
     <!-- AdminLTE App -->
     <script src="../../dist/js/adminlte.min.js"></script>
     <!-- Axios -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.min.js"></script>
+    <script src="../../plugins/axios/js/axios.min.js"></script>
     <!-- This is what supports JSX compilation (and other transformations) -->
-    <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js"></script>
-    <!-- React -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="../../plugins/babel/js/babel.min.js"></script>
+    <!-- These are for React -->
+    <script src="../../plugins/react/js/react.development.js"></script>
+    <script src="../../plugins/react/js/react-dom.development.js"></script>
     <!-- EChart -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <script src="../../plugins/echarts/js/echarts.min.js"></script>
 
     <script>
-      var chart1 = echarts.init(document.getElementById("chart1"));
-      var chart1Option = {
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        legend: {
-          data: []
-        },
-        xAxis: [
-          {
-            type: 'category',
-            axisTick: { show: false },
-            data: []
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value'
-          }
-        ],
-        series: []
-      };
-      axios.get("http://localhost/chart1Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        chart1Option.legend.data = []
-        chart1Option.xAxis[0].data = []
-        chart1Option.series = []
-        response.data.data.forEach(item => {
-          if (!chart1Option.legend.data.includes(item.action)) {
-            chart1Option.legend.data.push(item.action)
-            chart1Option.series.push({
-              name: item.action,
-              type: 'bar',
-              emphasis: {
-                focus: 'series'
-              },
+      if (!localStorage.getItem("account")) {
+        window.location.href = "/login";
+      }
+      //date range picker
+      $(function () {
+        var daterange = $('input[name="dates"]').daterangepicker({
+          ranges: {
+            今天: [moment(), moment()],
+            昨天: [moment().subtract(1, "days"), moment().subtract(1, "days")],
+            "前 7 天": [moment().subtract(6, "days"), moment()],
+            "前 30 天": [moment().subtract(29, "days"), moment()],
+            這個月: [moment().startOf("month"), moment().endOf("month")],
+            上個月: [
+              moment().subtract(1, "month").startOf("month"),
+              moment().subtract(1, "month").endOf("month"),
+            ],
+          },
+          locale: {
+            format: "YYYY-MM-DD",
+            separator: " ~ ",
+            applyLabel: "確認",
+            cancelLabel: "取消",
+            customRangeLabel: "自訂義範圍",
+            daysOfWeek: ["日", "一", "二", "三", "四", "五", "日"],
+            monthNames: [
+              "1 月",
+              "2 月",
+              "3 月",
+              "4 月",
+              "5 月",
+              "6 月",
+              "7 月",
+              "8 月",
+              "9 月",
+              "10 月",
+              "11 月",
+              "12 月",
+            ],
+            firstDay: 1,
+          },
+          startDate: moment().subtract(30, "days").format("YYYY-MM-DD"),
+          endDate: moment().format("YYYY-MM-DD"),
+          //minDate: "2000年01月02日",
+          //maxDate: "2020年12月31日",
+        });
+        // 初始化chart圖
+        var chart1 = echarts.init(document.getElementById("chart1"));
+        var chart2 = echarts.init(document.getElementById("chart2"));
+        var chart3 = echarts.init(document.getElementById("chart3"));
+        var chart4 = echarts.init(document.getElementById("chart4"));
+        var chart5 = echarts.init(document.getElementById("chart5"));
+        var chart6 = echarts.init(document.getElementById("chart6"));
+        updateChart(
+          chart1, chart2, chart3, chart4, chart5, chart6,
+          daterange.data().startDate,
+          daterange.data().endDate
+        );
+        // 搜尋事件處理
+        $("#searchButton").on("click", function () {
+          console.log($('input[name="dates"]').val().split("~")[0].trim());
+          console.log($('input[name="dates"]').val().split("~")[1].trim());
+          updateChart(
+            chart1, chart2, chart3, chart4, chart5, chart6,
+            $('input[name="dates"]').val().split("~")[0].trim(),
+            $('input[name="dates"]').val().split("~")[1].trim()
+          );
+        });
+      });
+      function updateChart(chart1, chart2, chart3, chart4, chart5, chart6, startDate, endDate) {
+        //chart1
+        var chart1Option = {
+          tooltip: {
+            trigger: "axis",
+            axisPointer: {
+              type: "shadow",
+            },
+          },
+          legend: {
+            data: [],
+          },
+          xAxis: [
+            {
+              type: "category",
+              axisTick: { show: false },
+              data: [],
+            },
+          ],
+          yAxis: [
+            {
+              type: "value",
+            },
+          ],
+          series: [],
+        };
+        axios
+          .get("http://localhost/chart1Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart1Option.legend.data = [];
+            chart1Option.xAxis[0].data = [];
+            chart1Option.series = [];
+            response.data.data.forEach((item) => {
+              if (!chart1Option.legend.data.includes(item.action)) {
+                chart1Option.legend.data.push(item.action);
+                chart1Option.series.push({
+                  name: item.action,
+                  type: "bar",
+                  emphasis: {
+                    focus: "series",
+                  },
+                  data: [],
+                });
+              }
+              if (!chart1Option.xAxis[0].data.includes(item.date)) {
+                chart1Option.xAxis[0].data.push(item.date);
+              }
+            });
+            chart1Option.xAxis[0].data.forEach((xAxis) => {
+              chart1Option.series.forEach((legend) => {
+                //console.log(data.data)
+                let match = response.data.data.find((item) => {
+                  return (item.date == xAxis) & (item.action == legend.name);
+                });
+                if (match != undefined) {
+                  legend.data.push(match["count"]);
+                } else {
+                  legend.data.push(0);
+                }
+              });
+            });
+            console.log(chart1Option);
+            chart1.setOption(chart1Option, true);
+            chart1.resize();
+          });
+        //chart2
+        var chart2Option = {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          };
+        axios
+          .get("http://localhost/chart2Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart2Option.series[0].data = []
+            response.data.data.forEach(item => {
+              chart2Option.series[0].data.push({'name': item.action, 'value': item.count})
+            })
+            console.log(chart2Option);
+            chart2.setOption(chart2Option, true);
+            chart2.resize();
+          });
+        //chart3
+        var chart3Option = {
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            legend: {
               data: []
+            },
+            xAxis: [
+              {
+                type: 'category',
+                axisTick: { show: false },
+                data: []
+              }
+            ],
+            yAxis: [
+              {
+                type: 'value'
+              }
+            ],
+            series: []
+          };
+        axios
+          .get("http://localhost/chart3Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart3Option.legend.data = []
+            chart3Option.xAxis[0].data = []
+            chart3Option.series = []
+            response.data.data.forEach(item => {
+              if (!chart3Option.legend.data.includes(item.problem)) {
+                chart3Option.legend.data.push(item.problem)
+                chart3Option.series.push({
+                  name: item.problem,
+                  type: 'bar',
+                  emphasis: {
+                    focus: 'series'
+                  },
+                  data: []
+                })
+              }
+              if (!chart3Option.xAxis[0].data.includes(item.date)) {
+                chart3Option.xAxis[0].data.push(item.date)
+              }
             })
-          }
-          if (!chart1Option.xAxis[0].data.includes(item.date)) {
-            chart1Option.xAxis[0].data.push(item.date)
-          }
-        })
-        chart1Option.xAxis[0].data.forEach(xAxis => {
-          chart1Option.series.forEach(legend => {
-            //console.log(data.data)
-            let match = response.data.data.find(item => {
-              return item.date == xAxis & item.action == legend.name
+            chart3Option.xAxis[0].data.forEach(xAxis => {
+              chart3Option.series.forEach(legend => {
+                //console.log(data.data)
+                let match = response.data.data.find(item => {
+                  return item.date == xAxis & item.problem == legend.name
+                })
+                if (match != undefined) {
+                  legend.data.push(match['count'])
+                } else {
+                  legend.data.push(0)
+                }
+              })
             })
-            if (match != undefined) {
-              legend.data.push(match['count'])
-            } else {
-              legend.data.push(0)
-            }
-          })
-        })
-        console.log(chart1Option);
-        chart1.setOption(chart1Option);
-      })
-      chart1.resize();
-
-      axios.get("http://localhost/chart2Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
-      })
-
-      axios.get("http://localhost/chart3Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
-      })
-
-      axios.get("http://localhost/chart4Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
-      })
-
-      axios.get("http://localhost/chart5Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
-      })
-
-      axios.get("http://localhost/chart6Option/2022-01-01/2022-01-02").then(function (response) {
-        console.log(response.data)
-        // do whatever you want if console is [object object] then stringify the response
-      })
+            console.log(chart3Option);
+            chart3.setOption(chart3Option, true);
+            chart3.resize();
+          });
+        //chart4
+        var chart4Option = {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          };
+        axios
+          .get("http://localhost/chart4Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart4Option.series[0].data = []
+            response.data.data.forEach(item => {
+              chart4Option.series[0].data.push({'name': item.problem, 'value': item.count})
+            })
+            console.log(chart4Option);
+            chart4.setOption(chart4Option, true);
+            chart4.resize();
+          });
+        //chart5
+        var chart5Option = {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          };
+        axios
+          .get("http://localhost/chart5Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart5Option.series[0].data = []
+            response.data.data.forEach(item => {
+              chart5Option.series[0].data.push({'name': item.fab, 'value': item.count})
+            })
+            console.log(chart5Option);
+            chart5.setOption(chart5Option, true);
+            chart5.resize();
+          });
+        //chart6
+        var chart6Option = {
+            tooltip: {
+              trigger: 'item'
+            },
+            legend: {
+              orient: 'vertical',
+              left: 'left'
+            },
+            series: [
+              {
+                type: 'pie',
+                radius: '50%',
+                data: [],
+                emphasis: {
+                  itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+                }
+              }
+            ]
+          };
+        axios
+          .get("http://localhost/chart6Option/" + startDate + "/" + endDate)
+          .then(function (response) {
+            console.log(response.data);
+            chart6Option.series[0].data = []
+            response.data.data.forEach(item => {
+              chart6Option.series[0].data.push({'name': item.fab, 'value': item.count})
+            })
+            console.log(chart6Option);
+            chart6.setOption(chart6Option, true);
+            chart6.resize();
+          });
+      }
     </script>
   </body>
 </html>

@@ -1,1 +1,0 @@
-SCHTASKS /DELETE /TN "NBWatchDog"

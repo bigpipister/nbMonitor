@@ -1,3 +1,0 @@
-"last logon info" 
- 使用者名稱            工作階段名稱    識別碼 狀態    閒置時間   登入時間
->tsunghsien            console             1  使用中      無   2021/12/27 下午 06:04

@@ -158,7 +158,7 @@ def deleteRepair(filename):
         # 更新最新維修狀態
         if os.path.exists(os.path.join("manage/repair.csv")):
             repairDf = pd.read_csv ("manage/repair.csv")
-            repairDf = repairDf[~repairDf.nbNumber.str.contains(filename)]
+            repairDf = repairDf[repairDf.nbNumber.str.strip() != filename]
             repairDf.to_csv("manage/repair.csv",encoding='utf_8_sig',index=False)
         response = {"status": 'success'}
         return jsonify(response)
@@ -418,7 +418,7 @@ def deleteFile(filename):
         # 更新最新借用狀態
         if os.path.exists(os.path.join("manage/rent.csv")):
             rentDf = pd.read_csv ("manage/rent.csv")
-            rentDf = rentDf[~rentDf.nbNumber.str.contains(filename)]
+            rentDf = rentDf[rentDf.nbNumber.str.strip() != filename]
             rentDf.to_csv("manage/rent.csv",encoding='utf_8_sig',index=False)
         response = {"status": 'success'}
         return jsonify(response)
@@ -464,22 +464,30 @@ def exportSummary():
 def chart1Option(startDate, endDate):
     d0 = datetime.strptime(startDate, '%Y-%m-%d')
     d1 = datetime.strptime(endDate, '%Y-%m-%d')
-    delta = d1 - d0
+    #print(d0)
+    #print(d1)
+    delta = d1 - d0 #日期區間
+    #print(delta)
     try:
         if request.method == 'GET':
             response = {'data': []}
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
                 df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                #print(df)
+                df = df[(pd.to_datetime(df["date"], format="%Y-%m-%d") >= d0) & (pd.to_datetime(df["date"], format="%Y-%m-%d") <= d1)]
+                #print(df)
                 if delta.days <= 7:
-                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d')
                 elif delta.days > 7:
                     df["date"] = df["registerTime"].dt.strftime('%Y-%m')
-
-                group_count = df.groupby(["date", "action"], as_index=False)["name"].count() #先分組
-                group_count = group_count.rename(columns={"name": "count"}, inplace=False)
+                #print(df)
+                group_count = df.groupby(["date", "action"], as_index=False)["name"].count() #先分組(把count的結果先塞進沒用的name欄位)
+                group_count = group_count.rename(columns={"name": "count"}, inplace=False) #把name欄位重新命名為count
                 group_count = group_count.sort_values(["date"])
                 group_count.index = range(len(group_count)) #重新排序index
+                #print(group_count.to_json(orient = 'records'))
                 response["data"] = json.loads(group_count.to_json(orient = 'records'))
                 #print(response)
             return response
@@ -489,11 +497,22 @@ def chart1Option(startDate, endDate):
 # chart2Option api
 @app.route('/chart2Option/<path:startDate>/<path:endDate>', methods = ['GET'])
 def chart2Option(startDate, endDate):
+    d0 = datetime.strptime(startDate, '%Y-%m-%d')
+    d1 = datetime.strptime(endDate, '%Y-%m-%d')
+    #print(d0)
+    #print(d1)
+    delta = d1 - d0 #日期區間
+    #print(delta)
     try:
         if request.method == 'GET':
             response = {'data': []}
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
+                df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                #print(df)
+                df = df[(pd.to_datetime(df["date"], format="%Y-%m-%d") >= d0) & (pd.to_datetime(df["date"], format="%Y-%m-%d") <= d1)]
+                #print(df)
                 group_count = df.groupby(["action"], as_index=False)["name"].count() #先分組
                 group_count = group_count.rename(columns={"name": "count"}, inplace=False)
                 group_count.index = range(len(group_count)) #重新排序index
@@ -515,8 +534,12 @@ def chart3Option(startDate, endDate):
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
                 df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                #print(df)
+                df = df[(pd.to_datetime(df["date"], format="%Y-%m-%d") >= d0) & (pd.to_datetime(df["date"], format="%Y-%m-%d") <= d1)]
+                #print(df)
                 if delta.days <= 7:
-                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d')
                 elif delta.days > 7:
                     df["date"] = df["registerTime"].dt.strftime('%Y-%m')
                 
@@ -552,8 +575,12 @@ def chart4Option(startDate, endDate):
             if os.path.exists(os.path.join("manage/history.csv")):
                 df = pd.read_csv ("manage/history.csv")
                 df["registerTime"] = pd.to_datetime(df["registerTime"], format="%Y/%m/%d %H:%M:%S")  #轉換日期時間格式(要計算時間)
+                df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                #print(df)
+                df = df[(pd.to_datetime(df["date"], format="%Y-%m-%d") >= d0) & (pd.to_datetime(df["date"], format="%Y-%m-%d") <= d1)]
+                #print(df)
                 if delta.days <= 7:
-                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d') #從datetime取出日期到date欄位
+                    df["date"] = df["registerTime"].dt.strftime('%Y-%m-%d')
                 elif delta.days > 7:
                     df["date"] = df["registerTime"].dt.strftime('%Y-%m')
 
@@ -616,11 +643,15 @@ def chart6Option(startDate, endDate):
 def auth():
     try:
         if request.method == 'POST':
-            #print(request.form)
-            username = request.form["username"]
-            password = request.form["password"]
-            if 'admin' in username and 'admin' in password:
+            body = request.get_data(as_text=True)  # 取得收到的訊息內容
+            json_data = json.loads(body) # json 格式化訊息內容
+            account = json_data["account"]
+            password = json_data["password"]
+            print(account)
+            print(password)
+            if 'admin' in account and 'admin' in password:
                 response = {"status": 'success'}
+                print(response)
                 return jsonify(response)
             else:
                 response = {"status": 'failure'}
